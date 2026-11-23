@@ -9,7 +9,7 @@ struct ContentView: View {
         GeometryReader { geo in
             let h = geo.size.height
             VStack(spacing: 8) {
-                OdometerView(count: store.count)
+                OdometerView(count: store.rollingValue)
                     .frame(height: h * 0.12)
 
                 // Big add button: fires on touch-DOWN for the lowest latency,

@@ -8,6 +8,10 @@ final class CounterStore: ObservableObject {
     static let maxValue = 9999
 
     @Published private(set) var count: Int
+    /// Number of times we've wrapped 9999 -> 0 this session. Only used so the
+    /// wheels keep rolling forward through the wrap instead of rewinding.
+    @Published private(set) var lap = 0
+    var rollingValue: Int { count + lap * (Self.maxValue + 1) }
     private let defaults = UserDefaults.standard
     private let key = "count"
     private let impact = UIImpactFeedbackGenerator(style: .rigid)
@@ -17,14 +21,23 @@ final class CounterStore: ObservableObject {
         impact.prepare()
     }
 
-    func increment() { set(count + 1) }
-    func decrement() { set(count - 1) }
+    func increment() {
+        if count == Self.maxValue {
+            lap += 1
+            commit(0)
+        } else {
+            commit(count + 1)
+        }
+    }
+    /// Minus stops at 0 (no wrap downward).
+    func decrement() {
+        guard count > 0 else { return }
+        commit(count - 1)
+    }
 
-    private func set(_ new: Int) {
-        let clamped = min(max(new, 0), Self.maxValue)
-        guard clamped != count else { return }
-        count = clamped
-        defaults.set(clamped, forKey: key)
+    private func commit(_ new: Int) {
+        count = new
+        defaults.set(new, forKey: key)
         impact.impactOccurred()
         impact.prepare()
     }
