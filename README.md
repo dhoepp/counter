@@ -13,6 +13,7 @@ Set your Team under Signing & Capabilities, then run on a **real device**
 (the volume buttons and volume observation don't work in the Simulator).
 
 ## Notes
+- Reset button (bottom-left) asks for confirmation; the confirm button is bottom-right.
 - Counts 0-9999; + wraps 9999 -> 0, - stops at 0. Value persists across launches.
 - Volume buttons: original volume is restored when the app goes to background.
   They don't work on the lock screen or while another app is in front.

@@ -26,12 +26,24 @@ struct ContentView: View {
                         .onChanged { _ in if !plusDown { plusDown = true; store.increment() } }
                         .onEnded { _ in plusDown = false })
 
-                Button { store.decrement() } label: {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(white: 0.2))
-                        .overlay(Image(systemName: "minus")
-                            .font(.system(size: 30, weight: .bold))
-                            .foregroundStyle(.white))
+                HStack(spacing: 8) {
+                    // Small reset button, bottom-LEFT.
+                    Button { store.inputLocked = true } label: {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(white: 0.12))
+                            .overlay(Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundStyle(.red.opacity(0.8)))
+                    }
+                    .frame(width: geo.size.width * 0.22)
+
+                    Button { store.decrement() } label: {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(white: 0.2))
+                            .overlay(Image(systemName: "minus")
+                                .font(.system(size: 30, weight: .bold))
+                                .foregroundStyle(.white))
+                    }
                 }
                 .frame(maxHeight: .infinity)
             }
@@ -44,6 +56,9 @@ struct ContentView: View {
                 .frame(width: 1, height: 1)
                 .opacity(0.01)
                 .allowsHitTesting(false)
+        }
+        .overlay {
+            if store.inputLocked { resetConfirmation }
         }
         .onAppear {
             volume.onUp = { store.increment() }
@@ -58,4 +73,33 @@ struct ContentView: View {
     }
 
     @State private var plusDown = false
+
+    /// Cancel sits where the reset button was (bottom-left); the destructive
+    /// confirm is bottom-RIGHT, so a double-tap on reset can't confirm it.
+    private var resetConfirmation: some View {
+        ZStack {
+            Color.black.opacity(0.85).ignoresSafeArea()
+            VStack(spacing: 8) {
+                Spacer()
+                Text("Reset counter to 0?")
+                    .font(.title2.bold())
+                    .foregroundStyle(.white)
+                Spacer()
+                HStack(spacing: 8) {
+                    Button { store.inputLocked = false } label: {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(white: 0.25))
+                            .overlay(Text("Cancel").font(.headline).foregroundStyle(.white))
+                    }
+                    Button { store.reset() } label: {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.red)
+                            .overlay(Text("Reset").font(.headline).foregroundStyle(.white))
+                    }
+                }
+                .frame(height: 80)
+            }
+            .padding(12)
+        }
+    }
 }
