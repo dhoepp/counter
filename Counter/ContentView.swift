@@ -73,33 +73,38 @@ struct ContentView: View {
     }
 
     @State private var plusDown = false
+    @State private var armed = false
 
-    /// Cancel sits where the reset button was (bottom-left); the destructive
-    /// confirm is bottom-RIGHT, so a double-tap on reset can't confirm it.
+    /// Reset button is bottom-left, so the destructive confirm goes at the TOP
+    /// of the screen, far from where the finger just was. Cancel takes the
+    /// reset button's old spot, and the confirm ignores taps for 0.5s.
     private var resetConfirmation: some View {
         ZStack {
             Color.black.opacity(0.85).ignoresSafeArea()
             VStack(spacing: 8) {
+                Button { if armed { store.reset() } } label: {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(armed ? Color.red : Color(white: 0.2))
+                        .overlay(Text("Yes, reset to 0").font(.title3.bold()).foregroundStyle(.white))
+                }
+                .frame(height: 90)
                 Spacer()
                 Text("Reset counter to 0?")
                     .font(.title2.bold())
                     .foregroundStyle(.white)
                 Spacer()
-                HStack(spacing: 8) {
-                    Button { store.inputLocked = false } label: {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(white: 0.25))
-                            .overlay(Text("Cancel").font(.headline).foregroundStyle(.white))
-                    }
-                    Button { store.reset() } label: {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.red)
-                            .overlay(Text("Reset").font(.headline).foregroundStyle(.white))
-                    }
+                Button { store.inputLocked = false } label: {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(white: 0.25))
+                        .overlay(Text("Cancel").font(.headline).foregroundStyle(.white))
                 }
-                .frame(height: 80)
+                .frame(height: 90)
             }
             .padding(12)
+        }
+        .onAppear {
+            armed = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { armed = true }
         }
     }
 }
